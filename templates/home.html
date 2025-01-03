@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    {% if current_user.is_authenticated and current_user.role in ['admin', 'unrestricted'] %}
+    <div class="mb-8 flex space-x-4">
+        <a href="{{ url_for('create') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Create New Post
+        </a>
+        <form action="{{ url_for('remove_all_posts') }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to remove ALL posts? This action cannot be undone!');">
+            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                Remove All Posts
+            </button>
+        </form>
+    </div>
+    {% endif %}
+    
+    <div class="grid gap-8 stagger-animate">
+        {% for post in posts %}
+        <article class="bg-white rounded-xl shadow-lg overflow-hidden hover-lift scroll-animate">
+            <div class="p-8">
+                <a href="{{ url_for('post', post_id=post.id) }}" class="block">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4 hover:text-indigo-600 smooth-transition">
+                        {{ post.title }}
+                    </h2>
+                </a>
+                
+                <div class="flex items-center mb-4 text-gray-600">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-medium text-sm">
+                            {{ post.author.username[0].upper() if post.author else '?' }}
+                        </div>
+                        <div class="ml-3">
+                            <div class="font-medium text-gray-900">{{ post.author.username if post.author else 'Unknown' }}</div>
+                            <div class="text-sm">
+                                {% if post.date %}
+                                <time datetime="{{ post.date.isoformat() }}">
+                                    {{ post.date.strftime('%B %d, %Y') }}
+                                </time>
+                                {% else %}
+                                <span>Unknown date</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="prose prose-sm max-w-none mb-4">
+                    {{ post.content[:200] + '...' if post.content|length > 200 else post.content }}
+                </div>
+                
+                <a href="{{ url_for('post', post_id=post.id) }}" 
+                   class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-700 smooth-transition">
+                    Read more
+                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </a>
+            </div>
+        </article>
+        {% else %}
+        <div class="text-center py-12 bg-white rounded-xl shadow-lg animate-fade-in">
+            <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No posts yet</h3>
+            <p class="text-gray-600 mb-6">Be the first one to create a post!</p>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('create') }}" 
+               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg 
+                      text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 
+                      focus:ring-offset-2 focus:ring-indigo-500 animate-bounce">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Create Post
+            </a>
+            {% else %}
+            <a href="{{ url_for('login') }}" 
+               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg 
+                      text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 
+                      focus:ring-offset-2 focus:ring-indigo-500 animate-bounce">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                </svg>
+                Login to Create Post
+            </a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
